@@ -24,8 +24,6 @@ c=-1
 tc=0
 tt=0
 
-format="%20s:"
-
 floor () {
   DIVIDEND=${1}
   DIVISOR=${2}
@@ -52,7 +50,9 @@ while true; do
   MIN=$( floor ${s} 60 )
   SEC=$((${s}-60*${MIN}))
 
-  printf "$format" "Total Time" "$(printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC)"
+  echo
+  echo -n "Total Time:        "
+  printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC
 
   s=$tc
   HOUR=$( floor ${s} 60/60 )
@@ -60,7 +60,7 @@ while true; do
   MIN=$( floor ${s} 60 )
   SEC=$((${s}-60*${MIN}))
 
-  echo -n -e "\nTime in segment: "
+  echo -n -e "\nTime in segment:   "
   printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC
   echo -e "\n\n"
 
@@ -90,7 +90,7 @@ while true; do
     R_SEC=$((${rs}-60*${R_MIN}))
 
     echo
-    echo -e "Current: ${segments[$c]}\n"
+    echo -e "Current:           ${segments[$c]}\n"
 
     if [[ "$rs" -lt "00" ]]; then
       COLOR=$C_RED
@@ -100,31 +100,31 @@ while true; do
       COLOR=$C_GREEN
     fi
 
-    echo -n "Remaining Time: "
+    echo -n "Remaining Time:    "
     printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" $R_HOUR $R_MIN $R_SEC
 
     echo -e "\n"
 
-    echo -n "Up Next: "
+    echo -n "Up Next:           "
     [[ -z "${segments[$((c + 1))]}" ]] && echo "END" || echo "${segments[$((c + 1))]}"
     echo -e "\nNotes:\n${notes[$c]}"
   fi
 
-  echo -e "\nPlanned end time: ${planned_end_time}"
+  echo -e "\nPlanned end time:  ${planned_end_time}"
   end_time=$($DATE_PRE "+${remaining_time}${DATE_TIMER}")
-  echo "Tracking end at: ${end_time}"
+  echo "Tracking end at:   ${end_time}"
 
 
 
   read -rsn1 -t1 input
 
   case $input in
-    n)
+    n|l|j)
       remaining_time=$((planned_time-remaining_time-${lengths[$c]}))
       c=$((c + 1))
       tc=0
       ;;
-    b)
+    b|h|k)
       remaining_time=$((planned_time-remaining_time+${lengths[$c]}))
       c=$((c - 1))
       ;;
