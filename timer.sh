@@ -94,7 +94,8 @@ while true; do
 
     echo -e "\n"
 
-    echo "Up Next: ${segments[$((c + 1))]}"
+    echo -n "Up Next: "
+    [[ -z "${segments[$((c + 1))]}" ]] && echo "END" || echo "${segments[$((c + 1))]}"
     echo -e "\nNotes:\n${notes[$c]}"
   fi
 
