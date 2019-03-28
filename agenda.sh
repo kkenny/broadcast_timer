@@ -1,5 +1,23 @@
 #!/usr/bin/env bash
 
-segments=("Introduction" "Video" "Response" "Agile Feedback Review" "else")
-lengths=(5 4 3 5 1)
-notes=("Thank you..." "Set audio input\nPlay Video" "*Reset audio input\nAsk for response" "Feedback Deck")
+# An array of topics to be time-boxed
+segments=(
+  "Introduction"
+  "This is an example agenda"
+  "Response"
+)
+
+# The length of each segment in minutes
+lengths=(
+  1
+  3
+  2
+)
+
+# Notes for each segment to help keep you on track
+notes=(
+  "Thank you..."
+  "" # If you want to have no notes for a segment
+  "* Reset audio input
+Ask for response & drive conversation"
+)
