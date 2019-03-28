@@ -63,6 +63,8 @@ while true; do
       echo "${segments[$i]}, ${lengths[$i]} minute(s) "
     done
   else
+    [[ -z "${lengths[$c]}" ]] && break
+
     m=${lengths[$c]}
     segment_secs=$((m*60))
 
@@ -111,3 +113,10 @@ while true; do
   input=''
 
 done
+
+clear
+
+echo "Planned End Time: ${planned_end_time}"
+echo "End Time: $(date)"
+
+echo "Total Time: ${tt}"
