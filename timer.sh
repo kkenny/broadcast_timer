@@ -24,6 +24,7 @@ floor () {
 }
 
 planned_time=0
+remaining_time=0
 
 for i in ${!lengths[@]}; do
   planned_time=$((planned_time+${lengths[$i]}))
