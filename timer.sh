@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# Detect GNU || BSD style date command
+if date --version | grep GNU ; then
+  DATE_GNU=true
+  DATE_PRE="date -d"
+  DATE_TIMER=" minutes"
+else
+  DATE_GNU=false
+  DATE_PRE="date -v"
+  DATE_TIMER="M"
+fi
+
+
 segments=(Introduction Video Response "Agile Feedback Review")
 lengths=(5 4 3 5)
 notes=("Thank you..." "Set audio input\nPlay Video" "*Reset audio input\nAsk for response" "Feedback Deck")
@@ -55,7 +67,7 @@ while true; do
 
   if [[ "$c" -eq "-1" ]]; then
     current_time=$(date)
-    planned_end_time=$(date -d "+${planned_time} minutes")
+    planned_end_time=$($DATE_PRE "+${planned_time}${DATE_TIMER}")
 
     echo "Upcoming:"
 
@@ -86,7 +98,7 @@ while true; do
   fi
 
   echo -e "\nPlanned end time: ${planned_end_time}"
-  end_time=$(date -d "+${remaining_time} minutes")
+  end_time=$($DATE_PRE "+${remaining_time}${DATE_TIMER}")
   echo "Tracking end at: ${end_time}"
 
 
