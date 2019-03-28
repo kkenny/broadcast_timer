@@ -1,5 +1,36 @@
 #!/usr/bin/env bash
 
+print_help() {
+  echo "This is a tool to time-box a meeting / presentation / service."
+  echo
+  echo "Options:"
+  echo "  Move to next segment: n|l|j"
+  echo "  Move to previous segment: b|h|k"
+  echo "  Quit: q"
+
+  exit 1
+}
+
+unknown_option() {
+  echo "Unknown option: ${1}"
+  echo
+  echo "To get help, execute with -h or --help"
+  echo "Otherwse, pass no arguments to start program."
+
+  exit 2
+}
+
+case $1 in
+  help|h|-h|--help)
+    print_help
+    ;;
+  "")
+    ;;
+  *)
+    unknown_option $1
+    ;;
+esac
+
 source ./agenda.sh
 
 # Detect GNU || BSD style date command
