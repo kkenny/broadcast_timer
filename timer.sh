@@ -151,13 +151,13 @@ while true; do
 
   case $input in
     n|l|j)
-      remaining_time=$((planned_time-remaining_time-${lengths[$c]}))
       c=$((c + 1))
+      remaining_time=$(((planned_time-remaining_time)-${lengths[$c]}))
       tc=0
       ;;
     b|h|k)
-      remaining_time=$((planned_time-remaining_time+${lengths[$c]}))
       c=$((c - 1))
+      remaining_time=$((planned_time-remaining_time+${lengths[$c]}))
       ;;
     q)
       exit 0
