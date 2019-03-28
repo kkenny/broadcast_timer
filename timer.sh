@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source ./agenda.sh
+
 # Detect GNU || BSD style date command
 if date --version | grep GNU ; then
   DATE_GNU=true
@@ -11,10 +13,18 @@ else
   DATE_TIMER="M"
 fi
 
+C_DEFAULT="\e[0m"
+C_YELLOW="\e[43m"
+C_GREEN="\e[92m"
+C_RED="\e[91m"
 
-segments=(Introduction Video Response "Agile Feedback Review")
-lengths=(5 4 3 5)
-notes=("Thank you..." "Set audio input\nPlay Video" "*Reset audio input\nAsk for response" "Feedback Deck")
+planned_time=0
+remaining_time=0
+c=-1
+tc=0
+tt=0
+
+format="%20s:"
 
 floor () {
   DIVIDEND=${1}
@@ -23,16 +33,9 @@ floor () {
   echo ${RESULT}
 }
 
-planned_time=0
-remaining_time=0
-
 for i in ${!lengths[@]}; do
   planned_time=$((planned_time+${lengths[$i]}))
 done
-
-c=-1
-tc=0
-tt=0
 
 while true; do
   segment_secs=$((m*60))
@@ -49,8 +52,7 @@ while true; do
   MIN=$( floor ${s} 60 )
   SEC=$((${s}-60*${MIN}))
 
-  echo -n -e "\nTotal Time: "
-  printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC
+  printf "$format" "Total Time" "$(printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC)"
 
   s=$tc
   HOUR=$( floor ${s} 60/60 )
@@ -89,8 +91,17 @@ while true; do
 
     echo
     echo -e "Current: ${segments[$c]}\n"
+
+    if [[ "$rs" -lt "00" ]]; then
+      COLOR=$C_RED
+    elif [[ "$rs" -lt "30" ]]; then
+      COLOR=$C_YELLOW
+    else
+      COLOR=$C_GREEN
+    fi
+
     echo -n "Remaining Time: "
-    printf "%02d:%02d:%02d\033[0K\r" $R_HOUR $R_MIN $R_SEC
+    printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" $R_HOUR $R_MIN $R_SEC
 
     echo -e "\n"
 
