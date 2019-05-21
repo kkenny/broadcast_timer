@@ -24,14 +24,17 @@ case $1 in
   help|h|-h|--help)
     print_help
     ;;
-  "")
+  "-s")
+    [[ -z $2 ]] && print_help
+    source "$2"
+    sourced="1"
     ;;
   *)
-    unknown_option $1
+    unknown_option "$1"
     ;;
 esac
 
-source ./agile-review-agenda.sh
+[[ "$sourced" -ne "1" ]] && source ./daily.sh
 
 # Detect GNU || BSD style date command
 if date --version | grep GNU >/dev/null 2>&1; then
@@ -62,11 +65,11 @@ tt=0
 floor () {
   DIVIDEND=${1}
   DIVISOR=${2}
-  RESULT=$(( ( ${DIVIDEND} - ( ${DIVIDEND} % ${DIVISOR}) )/${DIVISOR} ))
+  RESULT=$(( ( DIVIDEND - ( DIVIDEND % DIVISOR) )/DIVISOR ))
   echo ${RESULT}
 }
 
-for i in ${!lengths[@]}; do
+for i in "${!lengths[@]}"; do
   planned_time=$((planned_time+${lengths[$i]}))
 done
 
@@ -80,47 +83,49 @@ while true; do
   clear
   echo
   date
+  echo '_________________________________________________'
 
   s=$planned_time_seconds
   P_HOUR=$( floor ${s} 60/60 )
-  s=$((${s}-(60*60*${P_HOUR})))
+  s=$((s-(60*60*P_HOUR)))
   P_MIN=$( floor ${s} 60 )
-  P_SEC=$((${s}-60*${P_MIN}))
+  P_SEC=$((s-60*P_MIN))
   echo -n -e "\nPlanned Time:      "
-  printf "%02d:%02d:%02d\033[0K\r" $P_HOUR $P_MIN $P_SEC
+  printf "%02d:%02d:%02d\033[0K\r" "$P_HOUR" "$P_MIN" "$P_SEC"
 
   s=$tt
   HOUR=$( floor ${s} 60/60 )
-  s=$((${s}-(60*60*${HOUR})))
+  s=$((s-(60*60*HOUR)))
   MIN=$( floor ${s} 60 )
-  SEC=$((${s}-60*${MIN}))
+  SEC=$((s-60*MIN))
 
   echo
   echo -n "Total Time:        "
-  printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC
+  printf "%02d:%02d:%02d\033[0K\r" "$HOUR" "$MIN" "$SEC"
 
   s=$tc
   HOUR=$( floor ${s} 60/60 )
-  s=$((${s}-(60*60*${HOUR})))
+  s=$((s-(60*60*HOUR)))
   MIN=$( floor ${s} 60 )
-  SEC=$((${s}-60*${MIN}))
+  SEC=$((s-60*MIN))
 
   echo -n -e "\nTime in segment:   "
-  printf "%02d:%02d:%02d\033[0K\r" $HOUR $MIN $SEC
-  echo -e "\n\n"
+  printf "%02d:%02d:%02d\033[0K\r" "$HOUR" "$MIN" "$SEC"
+  echo -e "\n"
+  echo '_________________________________________________'
 
   if [[ "$C" -lt "-1" ]]; then
     c=-1
   fi
 
   if [[ "$c" -eq "-1" ]]; then
-    current_time=$(date)
+    #current_time=$(date)
     planned_end_time=$($DATE_PRE "+${planned_time}${DATE_TIMER}")
 
     echo
     echo "Upcoming:"
 
-    for i in ${!segments[@]}; do
+    for i in "${!segments[@]}"; do
       echo "${segments[$i]}, ${lengths[$i]} minute(s) "
     done
   else
@@ -131,12 +136,11 @@ while true; do
 
     rs=$((segment_secs-tc))
     R_HOUR=$( floor ${rs} 60/60 )
-    rs=$((${rs}-(60*60*${R_HOUR})))
+    rs=$((rs-(60*60*R_HOUR)))
     R_MIN=$( floor ${rs} 60 )
-    R_SEC=$((${rs}-60*${R_MIN}))
+    R_SEC=$((rs-60*R_MIN))
 
-    echo
-    echo -e "Current:           ${segments[$c]}\n"
+    echo "Current:           ${segments[$c]}"
 
     if [[ "$rs" -lt "00" ]]; then
       COLOR=$C_RED
@@ -147,13 +151,15 @@ while true; do
     fi
 
     echo -n "Remaining Time:    "
-    printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" $R_HOUR $R_MIN $R_SEC
-
-    echo -e "\n"
+    printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" "$R_HOUR" "$R_MIN" "$R_SEC"
+    echo
+    echo "Segment End:       ${segment_planned_end_time}"
 
     echo -n "Up Next:           "
     [[ -z "${segments[$((c + 1))]}" ]] && echo "END" || echo "${segments[$((c + 1))]} (${lengths[$((c + 1))]} Minute(s))"
-    echo -e "\nNotes:\n${notes[$c]}"
+    echo '_________________________________________________'
+    echo -e "Notes:\n${notes[$c]}"
+    echo '_________________________________________________'
   fi
 
   echo -e "\nPlanned end time:  ${planned_end_time}"
@@ -168,9 +174,10 @@ while true; do
   case $input in
     n|l|j)
       c=$((c + 1))
+      tc=0
       [[ "${lengths[$c]}" -ge "0" ]] && segment_over_under=$((tc-(${lengths[$c]}*60)))
       total_over_under=$((total_over_under+segment_over_under))
-      tc=0
+      segment_planned_end_time=$($DATE_PRE "+${lengths[$c]}${DATE_TIMER}" | awk '{ print $4 }')
       ;;
     b|h|k)
       c=$((c - 1))
@@ -178,7 +185,8 @@ while true; do
       total_over_under=$((total_over_under+segment_over_under))
       ;;
     q)
-      exit 0
+      break
+      #exit 0
       ;;
   esac
 
@@ -191,22 +199,22 @@ done
 clear
 s=$tt
 T_HOUR=$( floor ${s} 60/60 )
-s=$((${s}-(60*60*${T_HOUR})))
+s=$((s-(60*60*T_HOUR)))
 T_MIN=$( floor ${s} 60 )
-T_SEC=$((${s}-60*${T_MIN}))
+T_SEC=$((s-60*T_MIN))
 
 
 echo "Planned End Time: ${planned_end_time}"
 echo "End Time: $(date)"
 echo -n "Total Time: "
-printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" $T_HOUR $T_MIN $T_SEC
+printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" "$T_HOUR" "$T_MIN" "$T_SEC"
 
 s=$total_over_under
 T_HOUR=$( floor ${s} 60/60 )
-s=$((${s}-(60*60*${T_HOUR})))
+s=$((s-(60*60*T_HOUR)))
 T_MIN=$( floor ${s} 60 )
-T_SEC=$((${s}-60*${T_MIN}))
+T_SEC=$((s-60*T_MIN))
 echo
 echo -n "Over/Under: "
-printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" $T_HOUR $T_MIN $T_SEC
+printf "${COLOR}%02d:%02d:%02d\033[0K\r${C_DEFAULT}" "$T_HOUR" "$T_MIN" "$T_SEC"
 echo
